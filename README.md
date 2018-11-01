@@ -4,7 +4,7 @@ The A2Z Machine is a Z Machine port to Arduino for playing Zork and other compat
 
 For a complete description of the project, visit:
 
-http://danthegeek.com/2018/10/27/a2z-machine-runn…bitsy-m4-express/
+http://danthegeek.com/2018/10/30/a2z-machine-running-zork-on-an-adafruit-itsybitsy-m4-express/
 
 ## Quick Start Guide
 
@@ -20,10 +20,10 @@ https://learn.adafruit.com/welcome-to-circuitpython/installing-circuitpython
 
 The filesystem is used to store the game files and saved games. Create 2 folders from the root folder of the device:
 
-- "games"
+- "stories"
 - "saves"
 
-Copy the game files from the games folder in the library to the games folder on the device. 
+Copy the story files from the games folder in the library to the stories folder on the device. 
 
 Create a sketch called "a2z_machine" and copy the project files into the folder. Compile and upload the sketch to the ItsyBitsy.
 
