@@ -1,6 +1,6 @@
 # A2Z Machine
 
-The A2Z Machine is a Z Machine port to Arduino for playing Zork and other compatible interactive fiction games. It was developed to work with the Adafruit M4 ItsyBitsy microcontroller (https://www.adafruit.com/product/3800) with no additional hardware or soldering needed. This project is based on the JZip 2.1 project at http://jzip.sourceforge.net/
+The A2Z Machine is a Z Machine port to Arduino for playing Zork and other compatible interactive fiction games. It was developed to work with the Adafruit M4 ItsyBitsy Express microcontroller (https://www.adafruit.com/product/3800) with no additional hardware or soldering needed. This project is based on the JZip 2.1 project at http://jzip.sourceforge.net/
 
 For a complete description of the project, visit:
 
