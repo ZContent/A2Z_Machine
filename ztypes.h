@@ -719,8 +719,8 @@ void z_storew( zword_t, zword_t, zword_t );
 int save_quetzal( FILE *, gzFile * );
 int restore_quetzal( FILE *, gzFile * );
 #else
-int save_quetzal( File &, File &);
-int restore_quetzal( File &, File &);
+int save_quetzal( Adafruit_SPIFlash_FAT::File &, Adafruit_SPIFlash_FAT::File &);
+int restore_quetzal( Adafruit_SPIFlash_FAT::File &, Adafruit_SPIFlash_FAT::File &);
 #endif
 
 

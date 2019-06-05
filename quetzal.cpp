@@ -80,7 +80,7 @@ typedef unsigned long ul_t;
 #ifdef USE_ZLIB
 int save_quetzal( FILE * sfp, gzFile * gfp )
 #else
-int save_quetzal( File &sfp, File &gfp )
+int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File &gfp )
 #endif
 {
    ul_t ifzslen = 0, cmemlen = 0, stkslen = 0, tmp_pc;
@@ -250,7 +250,7 @@ int save_quetzal( File &sfp, File &gfp )
  * attempt to read a word; return TRUE on success
  */
 
-static int read_word( File &fp, zword_t * result )
+static int read_word( Adafruit_SPIFlash_FAT::File &fp, zword_t * result )
 {
    int a, b;
 
@@ -267,7 +267,7 @@ static int read_word( File &fp, zword_t * result )
  * attempt to read a longword; return TRUE on success
  */
 
-static int read_long( File &fp, ul_t * result )
+static int read_long( Adafruit_SPIFlash_FAT::File &fp, ul_t * result )
 {
    int a, b, c, d;
 
@@ -301,7 +301,7 @@ static int read_long( File &fp, ul_t * result )
 #ifdef USE_ZLIB
 int restore_quetzal( FILE * sfp, gzFile * gfp )
 #else
-int restore_quetzal( File &sfp, File &gfp )
+int restore_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File &gfp )
 #endif
 {
    ul_t ifzslen, currlen, tmpl, skip = 0; 

@@ -343,13 +343,12 @@ void blank_status_line( void )
    /* Move the cursor to the top line of the status window, set the reverse
     * rendition and print the status line */
 
-   z_set_window( STATUS_WINDOW );
+    z_set_window( STATUS_WINDOW );
    move_cursor( 1, 1 );
    set_attribute( REVERSE );
 
    /* Redirect output to the status line buffer and pad the status line with
     * spaces then disable output redirection */
-
    z_output_stream( 3, 0 );
    pad_line( screen_cols );
    status_line[status_pos] = '\0';
@@ -363,7 +362,6 @@ void blank_status_line( void )
 
    set_attribute( NORMAL );
    z_set_window( TEXT_WINDOW );
-
 }                               /* blank_status_line */
 
 /*

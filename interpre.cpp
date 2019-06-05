@@ -55,22 +55,24 @@ int interpret(  )
    int maxoperands, count, extended, i;
 
    interpreter_status = 1;
-  //Serial.print("begin interpret(), PC: ");Serial.println(pc,HEX);
+   //Serial.print("begin interpret(), PC: ");Serial.println(pc,HEX);delay(50);
    /* Loop until HALT instruction executed */
 
    for ( interpreter_state = RUN; interpreter_state == RUN && halt == FALSE; )
    {
     //Blink(13,200,1);delay(400);
-    //Serial.println("debug 1");
+    //Serial.print("debug 1, PC: ");Serial.println(pc,HEX);delay(50);
+    //delay(10);
+    yield();
       /* Load opcode and set operand count */
 
     opcode = read_code_byte(  );
-    //Serial.println(String("read opcode 1: ") + String((int)opcode,HEX));
+    //Serial.println(String("read opcode 1: ") + String((int)opcode,HEX));delay(50);
     //Serial.println("debug 2");
       if ( h_type > V4 && opcode == 0xbe )
       {
          opcode = read_code_byte(  );
-         //Serial.println(String("read opcode 2: ") + String((int)opcode,HEX));
+         //Serial.println(String("read opcode 2: ") + String((int)opcode,HEX));delay(50);
          extended = TRUE;
       }
       else
@@ -81,7 +83,7 @@ int interpret(  )
       /* Multiple operand instructions */
       if ( ( opcode < 0x80 || opcode > 0xc0 ) || extended == TRUE )
       {
-         //Serial.print("debug 4: opcode ");Serial.println((int)opcode,HEX);
+         //Serial.print("debug 4: opcode ");Serial.println((int)opcode,HEX);delay(50);
 
          /* Two operand class, load both operands */
 
@@ -91,7 +93,7 @@ int interpret(  )
             operand[count++] = load_operand( ( opcode & 0x40 ) ? 2 : 1 );
             operand[count++] = load_operand( ( opcode & 0x20 ) ? 2 : 1 );
             opcode &= 0x1f;
-            //Serial.print("debug 4b: opcode ");Serial.println((int)opcode,HEX);
+            //Serial.print("debug 4b: opcode ");Serial.println((int)opcode,HEX);delay(50);
         }
          else
          {
@@ -99,7 +101,7 @@ int interpret(  )
             /* Variable operand class, load operand specifier */
 
             opcode &= 0x3f;
-            //Serial.print("debug 4c: opcode ");Serial.println((int)opcode,HEX);
+            //Serial.print("debug 4c: opcode ");Serial.println((int)opcode,HEX);delay(50);
            if ( opcode == 0x2c || opcode == 0x3a )
             {                   /* Extended CALL instruction */
                specifier = read_code_word(  );
@@ -129,7 +131,7 @@ int interpret(  )
             Serial.println(debugbuff);
 
 #endif
-            //Serial.print("Debug 5: switch opcode ");Serial.println((int)opcode,HEX);
+            //Serial.print("Debug 5: switch opcode ");Serial.println((int)opcode,HEX);delay(50);
             switch ( ( char ) opcode )
             {
 
@@ -172,7 +174,7 @@ int interpret(  )
             Serial.println(debugbuff);
 
 #endif
-            //Serial.print("Debug 5b, switch opcode: ");Serial.println((int)opcode,HEX);
+            //Serial.print("Debug 5b, switch opcode: ");Serial.println((int)opcode,HEX);delay(50);
             switch ( ( char ) opcode )
             {
 
@@ -384,7 +386,7 @@ int interpret(  )
             Serial.println(debugbuff);
 
 #endif
-            //Serial.print("Debug 7b: switch opcode "); Serial.println((int)opcode & 0x0f, HEX);
+            //Serial.print("Debug 7b: switch opcode "); Serial.println((int)opcode & 0x0f, HEX);delay(50);
             switch ( ( char ) opcode & 0x0f )
             {
                case 0x00:
@@ -450,7 +452,7 @@ int interpret(  )
             sprintf( debugbuff, "PC = 0x%08lx   Op%s = 0x%02x\n", pc, "(0 )", opcode );
             Serial.println(debugbuff);
 #endif
-            //Serial.print("Debug 8, switch opcode: ");Serial.println((int)opcode & 0x0f,HEX);
+            //Serial.print("Debug 8, switch opcode: ");Serial.println((int)opcode & 0x0f,HEX);delay(50);
             switch ( ( char ) opcode & 0x0f )
             {
                case 0x00:
@@ -505,7 +507,7 @@ int interpret(  )
             }
          }
       }
-      //Serial.println("Debug: bottom of loop");
+      //Serial.println("Debug: bottom of loop");delay(50);
    }
    halt = FALSE; // reset for new game
    return ( interpreter_status );

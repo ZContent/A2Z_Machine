@@ -229,7 +229,6 @@ void z_restart( void )
    set_colours( 1, 1 );         /* set default colors, added by JDH 8/6/95 */
    set_attribute( NORMAL );
    z_erase_window( Z_SCREEN );
-
    restart_screen(  );
 
    /* Reset the interpreter state */

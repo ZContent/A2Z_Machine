@@ -47,11 +47,11 @@ extern int GLOBALVER;
 #ifdef USE_ZLIB
 static gzFile *gfp = NULL;      /* Zcode file pointer */
 #else
-static File gfp;        /* Zcode file pointer */
+static Adafruit_SPIFlash_FAT::File gfp;        /* Zcode file pointer */
 #endif
 
-static File sfp;        /* Script file pointer */
-static File rfp;        /* Record file pointer */
+static Adafruit_SPIFlash_FAT::File sfp;        /* Script file pointer */
+static Adafruit_SPIFlash_FAT::File rfp;        /* Record file pointer */
 
 #if defined BUFFER_FILES        
 #ifndef USE_ZLIB
@@ -542,7 +542,7 @@ int z_save( int argc, zword_t table, zword_t bytes, zword_t name )
 {
    char new_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1];
    char default_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1];
-   File afp;
+   Adafruit_SPIFlash_FAT::File afp;
 
 #if defined BUFFER_FILES        
    char afpbuffer[BUFSIZ];      
@@ -629,7 +629,7 @@ int z_restore( int argc, zword_t table, zword_t bytes, zword_t name )
 {
    char new_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1];
    char default_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1];
-   File afp;
+   Adafruit_SPIFlash_FAT::File afp;
 
 #if defined BUFFER_FILES        
    char afpbuffer[BUFSIZ];      
@@ -815,7 +815,7 @@ void swap_bytes( zword_t * ptr, int len )
 
 static int save_restore( const char *file_name, int flag )
 {
-   File tfp;
+   Adafruit_SPIFlash_FAT::File tfp;
 
 #if defined BUFFER_FILES        
    char tfpbuffer[BUFSIZ];      

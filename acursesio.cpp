@@ -78,16 +78,13 @@ void Arduino_putchar(uint8_t c)
 
 char Arduino_getchar()
 {
-  char c;
-  while (!Serial.available());
+  while (!Serial.available()){yield();};
   return Serial.read();
 }
 
 static int inc( void )
 {
-   //int c = getchar(  );
-
-   while(!Serial.available());
+   while(!Serial.available()){yield();};
    int c = Serial.read();
    if ( c == -1 )
    {
@@ -96,7 +93,7 @@ static int inc( void )
    if((int) c != 127) // is this a backspace key? will print it later
     Serial.print((char) c);
    if(c == '\r')
-    Serial.print((char) '\n');
+     Serial.print((char) '\n');
    return c;
 }
 
@@ -163,7 +160,7 @@ void reset_screen(  )
    if ( interp_initialized )
    {
       display_string( "\r\n[Hit any key to exit.]" );
-      getch(  );
+      Arduino_getchar();
 
       delete_status_window(  );
       select_text_window(  );
@@ -367,9 +364,8 @@ void scroll_line(  )
 int input_line( int buflen, char *buffer, int timeout, int *read_size )
 {
    int c;
-
+   yield();
    *read_size = 0;
-
    // while ( ( c = read_char(  ) ) != '\n' )
    while ( ( c = read_char(  ) ) != '\r' ) // use for Arduino line feed
    {
@@ -384,8 +380,12 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
       }
       else if ( *read_size < buflen )
          buffer[( *read_size )++] = c;
+     delay(200);
    }
    text_col = 0;
+   //Serial.print("");
+   //delay(1000);
+   yield();
    return c;
 }                               /* input_line */
 
@@ -442,7 +442,7 @@ static int read_key( int mode )
    {
       do
       {
-         c = getch(  );
+         c = Arduino_getchar();
          if ( c == 4 )
          {
             reset_screen(  );
@@ -455,7 +455,7 @@ static int read_key( int mode )
    {                            /* also pass ESC character back for editor */
       do
       {
-         c = getch(  );
+         c = Arduino_getchar();
          if ( c == 4 )
          {
             reset_screen(  );
