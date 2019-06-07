@@ -59,8 +59,7 @@ typedef unsigned long ul_t;
 #define ID_ANNO 0x414e4e4f
 
 /* macros to write QUETZAL files */
-//#define write_byte(fp,b) (put_c ((unsigned)(b),fp) != EOF) 
-#define write_byte(fp,b) (fp.write((uint8_t)(b)) != 0) 
+//#define write_byte(fp,b) (fp.write((uint8_t)(b)) != 0) 
 #define write_bytx(fp,b) write_byte(fp,(b) & 0xFF)
 #define write_word(fp,w) \
     (write_bytx(fp,(w)>> 8) && write_bytx(fp,(w)))
@@ -71,6 +70,39 @@ typedef unsigned long ul_t;
     (write_long(fp,id)      && write_long(fp,len))
 #define write_run(fp,run) \
     (write_byte(fp,0)       && write_byte(fp,(run)))
+
+
+#define DISKCACHE_SIZE 64
+zbyte_t diskcache[DISKCACHE_SIZE];
+int diskcachepos = 0;
+
+// the disk cache speeds up writing to flash drive
+bool flush_diskcache(Adafruit_SPIFlash_FAT::File &fp)
+{
+  if(diskcachepos > 0)
+  {
+    int val = fp.write(&diskcache[0],diskcachepos);
+    diskcachepos = 0;
+    return val != 0;
+  }
+  return true;
+}
+
+uint32_t get_diskcache_position(Adafruit_SPIFlash_FAT::File &fp)
+{
+  return fp.position() + diskcachepos;
+}
+
+bool write_byte(Adafruit_SPIFlash_FAT::File &fp, zbyte_t b)
+{
+  diskcache[diskcachepos++] = b;
+  if(diskcachepos >= DISKCACHE_SIZE)
+  {
+    int val = flush_diskcache(fp);
+    return val != 0;
+  }
+  return true;
+}
 
 /* save_quetzal
  *
@@ -111,7 +143,8 @@ int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File 
 
    /* write CMem chunk */
    /* j is current run length */
-   if ( ( cmempos = sfp.position() ) < 0 )
+   //if ( ( cmempos = sfp.position() ) < 0 )
+   if ( ( cmempos = get_diskcache_position(sfp) ) < 0 )
       return FALSE;
    if ( !write_chnk( sfp, ID_CMem, 0 ) )
       return FALSE;
@@ -119,6 +152,7 @@ int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File 
    gfp.seek(0);
    for ( i = 0, j = 0, cmemlen = 0; i < h_restart_size; ++i )
    {
+      yield();
       if ( ( c = gfp.read() ) == -1 )
          return FALSE;
       c ^= get_byte( i );
@@ -152,7 +186,8 @@ int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File 
          return FALSE;
 
    /* write Stks chunk */
-   if ( ( stkspos = sfp.position() ) < 0 )
+   //if ( ( stkspos = sfp.position() ) < 0 )
+   if ( ( stkspos = get_diskcache_position(sfp) ) < 0 )
       return FALSE;
    if ( !write_chnk( sfp, ID_Stks, 0 ) )
       return FALSE;
@@ -229,17 +264,21 @@ int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File 
    if ( cmemlen & 1 )
       ++ifzslen;
    //( void ) fseek( sfp, ( long ) 4, SEEK_SET );
+   flush_diskcache(sfp);
    ( void ) sfp.seek(( long ) 4);
    if ( !write_long( sfp, ifzslen ) )
       return FALSE;
    //( void ) fseek( sfp, cmempos + 4, SEEK_SET );
+   flush_diskcache(sfp);
    ( void ) sfp.seek(cmempos + 4);
    if ( !write_long( sfp, cmemlen ) )
       return FALSE;
    //( void ) fseek( sfp, stkspos + 4, SEEK_SET );
+   flush_diskcache(sfp);
    ( void ) sfp.seek(stkspos + 4);
    if ( !write_long( sfp, stkslen ) )
       return FALSE;
+   flush_diskcache(sfp);
    return TRUE;
 }
 

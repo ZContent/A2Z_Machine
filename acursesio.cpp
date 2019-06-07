@@ -69,7 +69,7 @@ extern ZINT16 default_fg;
 extern ZINT16 default_bg;
 
 static void display_string( char * );
-static int read_char( void );
+static int read_char( int timeout );
 
 void Arduino_putchar(uint8_t c)
 {
@@ -82,9 +82,12 @@ char Arduino_getchar()
   return Serial.read();
 }
 
-static int inc( void )
+static int inc( uint32_t timeout = 0 )
 {
-   while(!Serial.available()){yield();};
+   uint32_t timer = millis();
+   while(!Serial.available() && ((timeout == 0) || (timeout > 0 && (timer + timeout*100 > millis())))){yield();};
+   if(timeout > 0 && ((timer + timeout*100) <= millis()))
+    return -1;
    int c = Serial.read();
    if ( c == -1 )
    {
@@ -367,7 +370,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
    yield();
    *read_size = 0;
    // while ( ( c = read_char(  ) ) != '\n' )
-   while ( ( c = read_char(  ) ) != '\r' ) // use for Arduino line feed
+   while ( ( c = read_char(timeout) ) != '\r' ) // use for Arduino line feed
    {
       if(c == 127) // backspace pressed?
       {
@@ -390,7 +393,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
 }                               /* input_line */
 
 #define COMMAND_LEN 20
-static int read_char( void )
+static int read_char( int timeout = 0 )
 {
    static int input_is_at_eol = TRUE;
    int c, n;
@@ -398,16 +401,16 @@ static int read_char( void )
 
    for ( ;; )
    {
-      if ( ( c = inc(  ) ) == '\\' )
+      if ( ( c = inc(timeout) ) == '\\' )
       {
-         c = inc(  );
+         c = inc(timeout);
          if ( c == '\\' )
             break;
          uninc( c );
          /* Read a command.  */
          for ( n = 0; n < COMMAND_LEN; n++ )
          {
-            command[n] = inc(  );
+            command[n] = inc(timeout);
             //if ( command[n] == '\n' )
             if ( command[n] == '\r' )
                break;
@@ -415,8 +418,8 @@ static int read_char( void )
          command[n] = '\0';
          /* If line was too long, flush input to the end of it.  */
          if ( n == COMMAND_LEN )
-            //while ( inc(  ) != '\n' )
-            while ( inc(  ) != '\r' )
+            //while ( inc(timeout) != '\n' )
+            while ( inc(timeout) != '\r' )
                ;
          continue;
       }
@@ -428,7 +431,7 @@ static int read_char( void )
 
 int input_character( int timeout )
 {
-   int c = read_char(  );
+   int c = read_char( timeout );
 
    /* Bureaucracy expects CR, not NL.  */
    return ( ( c == '\n' ) ? '\r' : c );

@@ -12,7 +12,7 @@
 
 #include "ztypes.h"
 
-#define A2Z_VERSION "2.0"
+#define A2Z_VERSION "2.1"
 
 #define MAXFILELIST 50 // max. # of game files to display
 char **storyfilelist;
@@ -406,7 +406,7 @@ void setup()
 void loop()
 {
   // This loops once per game
-  Serial.println("A2Z Machine - Play Zork and other interactive fiction games on Arduino");
+  Serial.println("A2Z Machine - Play Zork and other interactive fiction games");
   Serial.println("Version " A2Z_VERSION);
   Serial.println("Visit DanTheGeek.com for project details.");
   Serial.println();
