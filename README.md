@@ -29,6 +29,6 @@ To initialize the filesystem, create 2 folders from the root folder of the devic
 The stories folder will contain the Z Machine game files, and the saves folder will contain saved games. Copy the story files from the games folder in the library to the stories folder on the device. 
 
 
-Use a terminal emulator to play the game (i.e. PuTTY for Windows). BAUD rate should be set to 9600, no local echo.
+Use a terminal emulator to play the game (i.e. PuTTY for Windows). BAUD rate should be set to 9600, no local echo. Select the implicit CR in every LF setting.
 
 ![ScreenShot](screenshot.png)
