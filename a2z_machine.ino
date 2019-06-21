@@ -12,7 +12,7 @@
 #include <mcurses.h>
 #include "ztypes.h"
 
-#define A2Z_VERSION "3.0"
+#define A2Z_VERSION "3.1"
 
 #define MAXFILELIST 50 // max. # of game files to display
 char **storyfilelist;

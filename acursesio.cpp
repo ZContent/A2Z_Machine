@@ -110,7 +110,7 @@ static int uninc( int c )
 
 static int outc( int c )
 {
-   Serial.print((char) c);
+   Serial.print(String((char) c));
    return c;
 }
 
