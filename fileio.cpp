@@ -979,7 +979,8 @@ static int save_restore( const char *file_name, int flag )
       }
       else
       {
-         fatal( "save_restore(): Read from SAVE file failed" );
+         //fatal( "save_restore(): Read from SAVE file failed" );
+         output_line("Read from SAVE file failed");
       }
    }
    digitalWrite(LEDPIN,LOW); // LED on while read/writing save file

@@ -566,7 +566,6 @@ void z_set_colour( zword_t foreground, zword_t background )
         ( ZINT16 ) background > 9 )
       fatal( "Bad colour!" );
 
-
    flush_buffer( FALSE );
 
    set_colours( foreground, background );

@@ -566,6 +566,10 @@ void report_strictz_error( int, const char * );
 
 /* Global routines */
 
+/* acursesio.cpp */
+void Arduino_putchar(uint8_t c);
+char Arduino_getchar();
+
 /* control.c */
 
 void z_check_arg_count( zword_t );

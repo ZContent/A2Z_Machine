@@ -11,15 +11,16 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-ztheme_t themes[6] = {
+ztheme_t themes[] = {
   {"TRS-80 Black", (F_BLACK|B_WHITE), (F_WHITE|B_BLACK)},
   {"Lisa White", (F_WHITE|B_BLACK), (F_BLACK|B_WHITE)},
   {"Compaq Green", (F_BLACK|B_GREEN), (F_GREEN|B_BLACK)},
   {"IBM XT Amber", (F_BLACK|B_YELLOW|A_DIM), (F_YELLOW|B_BLACK|A_DIM)},
   {"Amiga Blue", (F_BLUE|B_WHITE), (F_WHITE|B_BLUE)},
-  //{"Blue and Gold", (F_YELLOW|B_BLUE|A_BOLD), (F_YELLOW|B_BLACK|A_BOLD)}
+  {"Amstrad Blue and Gold", (F_YELLOW|B_BLACK|A_BOLD), (F_YELLOW|B_BLUE|A_BOLD)}
 };
-int themecount = 5;
+//int themecount = 5;
+int themecount = sizeof(themes)/sizeof(themes[0]);
 
 extern int theme;
 #define EXTENDED 1
@@ -88,15 +89,16 @@ static int inc( uint32_t timeout = 0 )
    while(!Serial.available() && ((timeout == 0) || (timeout > 0 && (timer + timeout*100 > millis())))){yield();};
    if(timeout > 0 && ((timer + timeout*100) <= millis()))
     return -1;
+
    int c = Serial.read();
    if ( c == -1 )
    {
       fatal("acursesio inc: error in Serial.read!");
    }
    if((int) c != 127) // is this a backspace key? will print it later
-    Serial.print((char) c);
+    Serial.write(c);
    if(c == '\r')
-     Serial.print((char) '\n');
+     Serial.write('\n');
    return c;
 }
 
@@ -383,7 +385,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
       }
       else if ( *read_size < buflen )
          buffer[( *read_size )++] = c;
-     delay(200);
    }
    text_col = 0;
    //Serial.print("");

@@ -9,10 +9,10 @@
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_SPIFlash_FatFs.h>
 #include "Adafruit_QSPI_Flash.h"
-
+#include <mcurses.h>
 #include "ztypes.h"
 
-#define A2Z_VERSION "2.1"
+#define A2Z_VERSION "3.0"
 
 #define MAXFILELIST 50 // max. # of game files to display
 char **storyfilelist;
@@ -21,6 +21,8 @@ Adafruit_QSPI_Flash flash;
 Adafruit_M0_Express_CircuitPython spiffs(flash);
 
 extern ztheme_t themes[];
+extern int themecount;
+
 int theme = 2; // default theme
 
 void Blink(byte PIN, byte DELAY_MS, byte loops)
@@ -36,78 +38,38 @@ void Blink(byte PIN, byte DELAY_MS, byte loops)
   digitalWrite(PIN,LOW);
 }
 
-int selectTheme()
-{
-  int buflen = 100;
-  static char buf[100];
-  static int theme = 1;
-  int timeout = 0;
-  int read_size = 0;
-  buf[0] = '\0';
-  extern int themecount;
-  
-  do
-  {
-    for(int i = 1; i <= themecount; i++)
-    {
-      Serial.print(i);Serial.print(": ");Serial.println(themes[i-1].tname);
+// sort an array of filenames
+void filesort(char **a, int size) {
+    for(int i=0; i<(size-1); i++) {
+        for(int j=0; j<(size-(i+1)); j++) {
+                int t1, t2;
+                t1 = atoi(a[j]);
+                t2 = atoi(a[j+1]);
+                if((t1 > 0) && (t2 > 0))
+                {
+                  // number sort
+                  if(t1 > t2)
+                  {
+                    char *t = a[j];
+                    a[j] = a[j+1];
+                    a[j+1] = t;
+                  }
+                }
+                else
+                {
+                  String t1 = String(a[j]);
+                  String t2 = String(a[j+1]);
+                  t1.toLowerCase();
+                  t2.toLowerCase();
+                  if(t1 > t2) {
+                    // string sort
+                    char *t = a[j];
+                    a[j] = a[j+1];
+                    a[j+1] = t;
+                  }
+                }
+        }
     }
-    Serial.print("Choose a color theme by number [");Serial.print(theme);Serial.print("]: "); 
-    input_line( buflen, buf, timeout, &read_size );
-    Serial.println();
-    if(read_size > 0)
-    {
-      // use entered value, otherwise, use default
-      buf[read_size] = '\0';
-      theme = atoi(buf);
-    }    
-  }
-  while(theme < 1 || theme > themecount);
-  return theme - 1;
-}
-
-int selectStory()
-{
-  static int storynum = 1;
-  int count = 0;
-  storyfilelist = getDirectory(spiffs.open(GAMEPATH));
-  do
-  {
-    char buffer[100];
-    int buflen = 100;
-    int timeout = 0;
-    int read_size = 0;
-    count = 0;
-    Serial.println("0: Refresh list");
-    while(storyfilelist[count] != NULL && count < MAXFILELIST)
-    {
-      Serial.print(count + 1);Serial.print(": ");Serial.println(storyfilelist[count]);
-      count++;
-    }
-    if(count == 0)
-    {
-      Serial.print("No stories found [press any key to try again]");
-      while (!Serial.available()){yield();};
-      Serial.read();
-      Serial.println();
-      return -1;
-    }
-    Serial.print("Choose a story by number[");Serial.print(storynum);Serial.print("]: ");
-    input_line( buflen, buffer, timeout, &read_size );
-    Serial.println();
-    if(read_size > 0)
-    {
-      buffer[read_size] = '\0';
-      int tnum = atoi(buffer);
-      if(tnum > 0)
-        storynum = atoi(buffer);
-      else
-        return -1;    
-    }
-  }
-  while(storynum <= 0 || storynum > count);
-
-  return storynum - 1;
 }
 
 char **getDirectory(Adafruit_SPIFlash_FAT::File dir)
@@ -151,29 +113,257 @@ char **getDirectory(Adafruit_SPIFlash_FAT::File dir)
    return dirlist;
 }
 
-// sort an array of filenames
-void filesort(char **a, int size) {
-    for(int i=0; i<(size-1); i++) {
-        for(int j=0; j<(size-(i+1)); j++) {
-                int t1, t2;
-                t1 = atoi(a[j]);
-                t2 = atoi(a[j+1]);
-                if((t1 > 0) && (t2 > 0))
-                {
-                  if(t1 > t2)
-                  {
-                    char *t = a[j];
-                    a[j] = a[j+1];
-                    a[j+1] = t;
-                  }
-                }
-                else if(String(a[j]) > String(a[j+1])) {
-                    char *t = a[j];
-                    a[j] = a[j+1];
-                    a[j+1] = t;
-                }
-        }
+void displayA2ZScreen(char filenames[MAXFILELIST][20], int count, int storynum)
+{
+  //int themecount = sizeof(themes)/sizeof(themes[0]);
+  attrset(themes[theme].text_attr);
+  erase(  );
+  // top line
+  attrset(themes[theme].status_attr);
+  int     col;
+  move(0,0);
+  for (col = 0; col < COLS; col++)
+  {
+    addch (' ');
+  }
+
+  mvaddstr_P (0, 1, String("A2Z Machine - Version " + String(A2Z_VERSION) + " - DanTheGeek.com").c_str());
+  attrset(themes[theme].text_attr);
+  yield();
+  mvaddstr_P ( 2, 1, String("Theme: " + String(themes[theme].tname)).c_str());
+  yield();
+  mvaddstr_P ( 3, 1, "Select a game to play:");
+  yield();
+  mvaddstr_P ( DEFAULT_ROWS - 2, 1, "MOVE:<tab>,<shift><tab>,<cursor>,letter|SELECT:<enter>|THEME:/|REFRESH:<f1>");
+  yield();
+  mvaddstr_P ( DEFAULT_ROWS - 1, 1, "Project details at https://DanTheGeek.com/a2zmachine");
+  yield();
+  // show stories
+  move(5,0);
+  for(int i = 0 ; i < count; i++)
+  {
+    if(i == storynum)
+      attrset(themes[theme].status_attr);      
+    int x = i % 5;
+    int y = i / 5;
+    mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[i]) + String(" ")).c_str() );
+    yield();
+    if(i == storynum)
+      attrset(themes[theme].text_attr);
+  }
+
+  move(7+(count/5),1);
+}
+
+static bool showA2ZScreen(int &storynum)
+{
+  char filenames[MAXFILELIST][20];
+  //int themecount = sizeof(themes)/sizeof(themes[0]);
+
+  if ( !initscr(  ) )
+  {
+    fatal( "initialize_screen(): Couldn't init curses." );
+  }
+  setFunction_putchar(Arduino_putchar); // tell the library which output channel shall be used
+  setFunction_getchar(Arduino_getchar); // tell the library which input channel shall be used
+  curs_set(0);
+
+  int x = 0, y = 0, count = 0;
+  storyfilelist = getDirectory(spiffs.open(GAMEPATH));
+  while(storyfilelist[count] != NULL && count < MAXFILELIST)
+  {
+    yield();
+    char shortname[15];
+    char paddedname[15];
+    int i;
+    for(i = 0; i < 14; i++)
+    {
+      yield();
+      if(storyfilelist[count][i] == '.')
+      {
+        shortname[i] = '\0';
+        break;
+      }
+      else
+      {
+        shortname[i] = storyfilelist[count][i];
+      }
     }
+    shortname[i] = '\0';
+    for(i = 0; i < 14; i++)
+    {
+      yield();
+      if(strlen(shortname) <= i)
+        paddedname[i] = ' ';
+      else
+        //paddedname[i] = 'a';
+        paddedname[i] = shortname[i];
+   }
+    paddedname[14] = '\0';
+    strcpy(filenames[count], paddedname);
+    //Serial.println(filenames[count]);
+    count++;
+  }
+  displayA2ZScreen(filenames, count, storynum);
+
+  if(count == 0)
+  {
+    Serial.print("No stories found [press any key to try again]");
+    while (!Serial.available()){yield();};
+    Serial.read();
+    Serial.println();
+    return false;
+  }
+  while(1)
+  {
+    #define SHIFTTAB 514
+    #define CURSORUP 515
+    #define CURSORDOWN 516
+    #define CURSORRIGHT 517
+    #define CURSORLEFT 518
+    #define FUNCTION1  519
+    int keystroke, escape1, escape2;
+    keystroke = Arduino_getchar();
+    if(keystroke == 0x1b)
+    {
+      escape1 = Arduino_getchar();
+      escape2 = Arduino_getchar();
+      //Serial.print("got ");Serial.println(escape1,HEX);
+      //Serial.print("got ");Serial.println(escape2,HEX);
+      if(escape1 == '[')
+      {
+        switch(escape2)
+        {
+          case 'A': //
+            keystroke = CURSORUP;
+            break;
+          case 'B':
+            keystroke = CURSORDOWN;
+            break;
+          case 'C':
+            keystroke = CURSORRIGHT;
+            break;
+          case 'D':
+            keystroke = CURSORLEFT;
+            break;
+          case 'Z':
+            keystroke = SHIFTTAB;
+            break;
+          case '1':
+            keystroke = FUNCTION1;
+        }
+      }
+    }
+    move(7+(count/5),1);
+    //Serial.print(" got ");Serial.println(keystroke,HEX);
+    yield();
+    switch(keystroke)
+    {
+      case '\t': // tab
+      case CURSORRIGHT:
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].text_attr);
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       yield();
+       storynum = (storynum+1)%count;
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].status_attr);      
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       attrset(themes[theme].text_attr);
+       move(7+(count/5),1);
+       break;
+      case SHIFTTAB:
+      case CURSORLEFT:
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].text_attr);
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       storynum = (storynum-1)%count;
+       if(storynum < 0)
+        storynum = count - 1;
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].status_attr);      
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       attrset(themes[theme].text_attr);
+       move(7+(count/5),1);
+       break;
+      case CURSORUP:
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].text_attr);
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       if(storynum - 5 >= 0)
+       {
+        storynum = (storynum-5)%count;
+       }
+       else
+       {
+        storynum = count - (count)%5 + (storynum-1)%count;
+        if(storynum >= count)
+          storynum -= 5;
+       }
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].status_attr);      
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       attrset(themes[theme].text_attr);
+       move(7+(count/5),1);
+       break;
+      case CURSORDOWN:
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].text_attr);
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       if(storynum + 5 < count)
+        storynum = (storynum+5)%count;
+       else
+       x = storynum % 5;
+       y = storynum / 5;
+       attrset(themes[theme].status_attr);      
+       mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+       attrset(themes[theme].text_attr);
+       move(7+(count/5),1);
+       break;
+      case '/': // change theme
+        theme = (theme + 1 ) %themecount;
+       displayA2ZScreen(filenames, count, storynum);
+       break;
+      case '\r': // return
+        curs_set(1);
+        return true;
+      case FUNCTION1: // refresh
+        return false;
+        break;
+      default: // first letter of filename?
+        if(isalnum(keystroke))
+        {
+          for(int i = 1; i <= count; i++)
+          {
+            if(tolower(*filenames[(storynum+i)%count]) == tolower(keystroke))
+            {
+             x = storynum % 5;
+             y = storynum / 5;
+             attrset(themes[theme].text_attr);
+             mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+             storynum = (storynum+i)%count;
+             x = storynum % 5;
+             y = storynum / 5;
+             attrset(themes[theme].status_attr);      
+             mvaddstr_P (5+y,x*16,String(String(" ") + String(filenames[storynum]) + String(" ")).c_str());
+             attrset(themes[theme].text_attr);
+             move(7+(count/5),1);
+             break;
+            }
+          }
+        }
+        break;
+    }
+  }
+  curs_set(1);
+  return true;
 }
 
 static void configure( zbyte_t min_version, zbyte_t max_version )
@@ -376,7 +566,7 @@ void flash_cache_read (uint8_t* dst, uint32_t addr, uint32_t count)
 void setup()
 {
   flash.begin();
-  pinMode(13, OUTPUT);
+  pinMode(LEDPIN, OUTPUT);
   // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
   usb_msc.setID("Adafruit", "A2Z Machine", "1.0");
 
@@ -399,26 +589,17 @@ void setup()
     fatal("Failed to mount filesystem, was CircuitPython loaded onto the board?");
   }
 
-  //storyfilelist = getDirectory(spiffs.open(GAMEPATH));
-
 }
 
 void loop()
 {
+  static int storynum = 0;
   // This loops once per game
-  Serial.println("A2Z Machine - Play Zork and other interactive fiction games");
-  Serial.println("Version " A2Z_VERSION);
-  Serial.println("Visit DanTheGeek.com for project details.");
-  Serial.println();
-
-  // prompt for theme
-  theme = selectTheme();
+  while(!showA2ZScreen(storynum));
   initialize_screen(  );
-  // prompt for story file
-  int storynum = -1;
-  while((storynum = selectStory()) < 0){yield();};
 
   char storyfile[200];
+
   sprintf(storyfile,"%s/%s",GAMEPATH, storyfilelist[storynum]);
 
   Serial.println("Opening story...");
@@ -433,7 +614,5 @@ void loop()
   close_story(  );
   close_script(  );
   reset_screen(  );
-  Serial.println("Thanks for playing!");
-  Serial.println();
 }
 

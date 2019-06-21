@@ -53,6 +53,8 @@ int interpret(  )
    zbyte_t opcode;
    zword_t specifier, operand[8];
    int maxoperands, count, extended, i;
+   char tbuff[60];
+
 
    interpreter_status = 1;
    //Serial.print("begin interpret(), PC: ");Serial.println(pc,HEX);delay(50);
@@ -362,10 +364,8 @@ int interpret(  )
                   break;
 
                default:
-                  //char tbuff[30];
-                  //sprintf(tbuff, "failing opcode: %i", opcode);
-                  //fatal(tbuff);
-                  fatal( "interpret(): Illegal 2 or more operand instruction" );
+                  sprintf(tbuff, "interpret(): failing opcode: %i", opcode);
+                  fatal(tbuff);
             }
          }
       }
