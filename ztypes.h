@@ -39,8 +39,10 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+#include <SdFat.h>
 #include <Adafruit_SPIFlash.h>
-#include <Adafruit_SPIFlash_FatFs.h>
+#include <mcurses.h>
+extern int theme;
 
 /* AIX likes to see this define... */
 #if defined(AIX)
@@ -114,7 +116,7 @@ extern unsigned char JTERP;
 #define SRANDOM_FUNC srandom
 #endif
 */
-#define RANDOM_FUNC  random
+#define RANDOM_FUNC  a2zrandom
 #define SRANDOM_FUNC randomSeed
 /* Perform stricter z-code error checking. If STRICTZ is #defined,
  * the interpreter will check for common opcode errors, such as reading
@@ -723,8 +725,8 @@ void z_storew( zword_t, zword_t, zword_t );
 int save_quetzal( FILE *, gzFile * );
 int restore_quetzal( FILE *, gzFile * );
 #else
-int save_quetzal( Adafruit_SPIFlash_FAT::File &, Adafruit_SPIFlash_FAT::File &);
-int restore_quetzal( Adafruit_SPIFlash_FAT::File &, Adafruit_SPIFlash_FAT::File &);
+int save_quetzal( File &, File &);
+int restore_quetzal( File &, File &);
 #endif
 
 
@@ -740,6 +742,7 @@ void z_erase_line( zword_t );
 void z_erase_window( zword_t );
 void z_print_table( int, zword_t * );
 void blank_status_line( void );
+int inc( uint32_t, bool);
 void output_char( int );
 void output_new_line( void );
 void output_string( const char * );
@@ -812,7 +815,8 @@ void z_push( zword_t );
 #define USE_MCURSES_H
 #define GAMEPATH "/stories"
 #define SAVEPATH "/saves"
-#define FILE_CREATE (FA_READ | FA_WRITE | FA_CREATE_ALWAYS)
+//#define FILE_CREATE (FA_READ | FA_WRITE | FA_CREATE_ALWAYS)
+#define FILE_CREATE (FILE_READ | FILE_WRITE)
 #define STATUS_ATTR (F_WHITE | B_BLUE | A_BOLD)
 #define TEXT_ATTR (F_GREEN | B_BLACK)
 void Blink(byte, byte, byte);
@@ -824,5 +828,7 @@ typedef struct ztheme
   uint16_t text_attr;  
 }
 ztheme_t;
+
+extern ztheme_t themes[];
 
 #endif /* !defined(__ZTYPES_INCLUDED) */

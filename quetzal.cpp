@@ -77,7 +77,7 @@ zbyte_t diskcache[DISKCACHE_SIZE];
 int diskcachepos = 0;
 
 // the disk cache speeds up writing to flash drive
-bool flush_diskcache(Adafruit_SPIFlash_FAT::File &fp)
+bool flush_diskcache(File &fp)
 {
   if(diskcachepos > 0)
   {
@@ -88,12 +88,12 @@ bool flush_diskcache(Adafruit_SPIFlash_FAT::File &fp)
   return true;
 }
 
-uint32_t get_diskcache_position(Adafruit_SPIFlash_FAT::File &fp)
+uint32_t get_diskcache_position(File &fp)
 {
   return fp.position() + diskcachepos;
 }
 
-bool write_byte(Adafruit_SPIFlash_FAT::File &fp, zbyte_t b)
+bool write_byte(File &fp, zbyte_t b)
 {
   diskcache[diskcachepos++] = b;
   if(diskcachepos >= DISKCACHE_SIZE)
@@ -112,7 +112,7 @@ bool write_byte(Adafruit_SPIFlash_FAT::File &fp, zbyte_t b)
 #ifdef USE_ZLIB
 int save_quetzal( FILE * sfp, gzFile * gfp )
 #else
-int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File &gfp )
+int save_quetzal( File &sfp, File &gfp )
 #endif
 {
    ul_t ifzslen = 0, cmemlen = 0, stkslen = 0, tmp_pc;
@@ -289,7 +289,7 @@ int save_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File 
  * attempt to read a word; return TRUE on success
  */
 
-static int read_word( Adafruit_SPIFlash_FAT::File &fp, zword_t * result )
+static int read_word( File &fp, zword_t * result )
 {
    int a, b;
 
@@ -306,7 +306,7 @@ static int read_word( Adafruit_SPIFlash_FAT::File &fp, zword_t * result )
  * attempt to read a longword; return TRUE on success
  */
 
-static int read_long( Adafruit_SPIFlash_FAT::File &fp, ul_t * result )
+static int read_long( File &fp, ul_t * result )
 {
    int a, b, c, d;
 
@@ -340,7 +340,7 @@ static int read_long( Adafruit_SPIFlash_FAT::File &fp, ul_t * result )
 #ifdef USE_ZLIB
 int restore_quetzal( FILE * sfp, gzFile * gfp )
 #else
-int restore_quetzal( Adafruit_SPIFlash_FAT::File &sfp, Adafruit_SPIFlash_FAT::File &gfp )
+int restore_quetzal( File &sfp, File &gfp )
 #endif
 {
    ul_t ifzslen, currlen, tmpl, skip = 0; 

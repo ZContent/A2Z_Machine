@@ -441,7 +441,9 @@ void output_new_line( void )
             /* Display the new status line while the screen in paused */
 
             if ( h_type < V4 )
+            {
                z_show_status(  );
+            }
 
             /* Reset the line count and display the more message */
 
@@ -450,12 +452,12 @@ void output_new_line( void )
             if ( replaying == OFF )
             {
                get_cursor_position( &row, &col );
-               output_string( "[MORE]" );
-               ( void ) input_character( 0 );
+               row = min(row,DEFAULT_ROWS);
+
+               output_string( "[MORE]" );clear_line();
+               inc(0,false);
+               move_cursor( row-1, col );
                move_cursor( row, col );
-               output_string( "      " );
-               move_cursor( row, col );
-               /* clear_line (); */
             }
          }
       }
